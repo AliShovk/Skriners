@@ -40,7 +40,9 @@ if (!config.telegram.token && !config.ntfy.topic) {
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
 let bot;
-if (config.telegram.token) {
+const shouldEnableTelegramPolling = process.env.TELEGRAM_ENABLE_POLLING === 'true';
+
+if (config.telegram.token && shouldEnableTelegramPolling) {
     try {
         bot = new TelegramBot(config.telegram.token, {
             polling: true,
@@ -52,6 +54,8 @@ if (config.telegram.token) {
     } catch (error) {
         logger.error(`Ошибка инициализации бота: ${error.message}`);
     }
+} else if (config.telegram.token) {
+    logger.info('Telegram polling отключен, бот использует ntfy и Telegram send fallback без polling');
 }
 
 if (bot) {
